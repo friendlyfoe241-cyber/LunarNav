@@ -168,6 +168,27 @@
           </aside>
         </section>
       </div>
+      <section class="planning-page app-view" data-view="planning" id="planning" hidden aria-label="Compare landing sites and mission dates">
+        <div class="section-title-row"><h1>Plan Mission</h1></div>
+        <div class="panel planning-controls">
+          <div class="planning-toolbar">
+            <label>Start date (UTC)<input type="date" id="finder-date" value="2026-11-14" min="2025-01-01" max="2036-12-31" /></label>
+            <label>Start time (UTC)<input type="time" id="planning-time" value="12:00" step="3600" /></label>
+            <label>Mission duration<select id="finder-duration"><option value="3">3 days</option><option value="7" selected>7 days</option><option value="14">14 days</option><option value="28">28 days</option></select></label>
+            <label>Horizon model<select id="finder-mode"><option value="flat">Geometric 0°</option><option value="terrain">Loaded terrain</option></select></label>
+          </div>
+          <details class="planning-data"><summary id="finder-terrain-count">Loading terrain profiles…</summary><p id="finder-data-status" role="status">Terrain mode includes only sites with a loaded profile.</p></details>
+        </div>
+
+        <section class="panel compare-detail" aria-labelledby="site-comparison-title">
+          <div class="panel-head"><h2 id="site-comparison-title">Compare landing sites</h2><span class="model-badge" id="compare-model">…</span></div>
+          <div id="compare-table" class="compare-table" tabindex="0" aria-label="Landing site metrics; scroll horizontally on small screens" aria-live="polite"></div>
+          <div id="compare-timeline" class="compare-timeline" tabindex="0" role="img" aria-label="Sun and Earth visibility timelines for the compared sites; scroll horizontally on small screens"></div>
+          <p class="planning-note">Solar energy uses a 12 m² reference array. <a href="/engineering" data-route="engineering">Power settings</a>.</p>
+        </section>
+
+        <p class="planning-note"><a href="/science" data-route="science">Sampling and ranking methods</a></p>
+      </section>
       <footer class="footer">
         <p>Team 1st LunarNav: NASA Space Apps 2026</p>
         <div>
