@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "description": "LunaNav: lunar south pole mission-planning cockpit, NASA Space Apps 2026",
-  "scripts": {},
+  "scripts": {
+    "test": "node --check scripts/preview-server.js && node --check scripts/build.js",
+    "dev": "node scripts/preview-server.js",
+    "build": "node scripts/build.js"
+  },
   "engines": {
     "node": ">=22.13.0"
   }

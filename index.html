@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#15181c" />
+  <meta name="description" content="LunarNav: lunar south-pole mission planning and Sun/Earth visibility screening." />
+  <title>LunarNav | Lunar mission planning</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+  <script type="module" src="/src/app.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <a class="brand" href="/"><strong>LunarNav</strong></a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a class="nav-link" href="/">Explore</a>
+      </nav>
+    </header>
+    <main id="main-content" tabindex="-1">
+      <div class="explore-head"><h1>Explore the Moon</h1></div>
+      <section class="cockpit" aria-label="Lunar exploration and mission analysis">
+        <div class="workspace-column">
+          <div class="field">
+            <label for="site-select">Study site</label>
+            <select id="site-select"></select>
+          </div>
+          <p><strong id="selected-name">Mons Mouton</strong><br /><span id="selected-coord"></span></p>
+          <div class="field-row">
+            <div class="field"><label for="mission-date">Start date (UTC)</label><input id="mission-date" type="date" value="2026-11-14" /></div>
+            <div class="field"><label for="mission-time">Start time (UTC)</label><input id="mission-time" type="time" value="12:00" /></div>
+          </div>
+          <div class="field">
+            <label>Mission duration</label>
+            <div id="duration">
+              <button type="button" data-days="3">3 days</button>
+              <button type="button" data-days="7" class="selected">7 days</button>
+              <button type="button" data-days="14">14 days</button>
+              <button type="button" data-days="28">28 days</button>
+            </div>
+          </div>
+          <div class="metrics">
+            <div class="metric-card"><small>Sun visible</small><strong id="sun-value">…</strong></div>
+            <div class="metric-card"><small>Earth visible</small><strong id="earth-value">…</strong></div>
+            <div class="metric-card"><small>Sun + Earth</small><strong id="dual-value">…</strong></div>
+            <div class="metric-card"><small>Longest Earth blackout</small><strong id="blackout-value">…</strong></div>
+          </div>
+          <div class="best-window"><span>Longest continuous overlap</span><strong id="best-window-length">…</strong></div>
+          <div class="panel">
+            <div class="panel-head"><h2>Visibility timeline</h2></div>
+            <div id="timeline-graph"></div>
+          </div>
+        </div>
+      </section>
+      <footer class="footer">
+        <p>LunarNav: lunar mission planning</p>
+      </footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
