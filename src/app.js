@@ -7,6 +7,8 @@ import {inspectSituation,buildSkyDiagram,fmtMargin,findNextHorizonEvent} from '.
 import {loadLolaTerrain} from './terrain.js';
 import {windowMetrics,comparisonRows} from './compare.js';
 import {findMissionWindows} from './finder.js';
+import {estimateSurfaceTraverse} from './travel.js';
+import {estimateEarthMoonTransit} from './transit.js';
 const SUN_CIRCUIT_HOURS=714;
 const params=new URLSearchParams(location.search);
 const startSite=SITES.find(x=>x.id===params.get('site'))||SITES[0];
@@ -58,3 +60,8 @@ function renderDateComparison(){const a=windowMetrics({start:state.base,days:sta
 function engineeringInputs(){return {area:Number($('#eng-area').value)||12,loadW:Number($('#eng-load').value)||200,batteryWh:Number($('#eng-battery').value)||500};}
 function updateMissionPanels(){const sim=simulateMission(state.samples,engineeringInputs(),state.terrain);state.simulation=sim;$('#eng-summary').textContent=sim.minimumSocPct>0?`Battery holds: minimum state of charge ${sim.minimumSocPct.toFixed(0)}%.`:`Power deficit: ${sim.unmetWh.toFixed(0)} Wh unmet.`;}
 function exportEngineeringCSV(){downloadCSV(`lunarnav-engineering-${state.site.id}-${state.date}.csv`,[['metric','value']]);toast('Engineering CSV exported');}
+
+function runTravelEstimate(){const target=SITES.find(s=>s.id===$('#travel-destination').value)||SITES[0];const departure=new Date(`${$('#travel-date').value}T${$('#travel-time').value}:00Z`);const estimate=estimateSurfaceTraverse({from:state.site,to:target,departureUTC:departure.toISOString(),speedKmh:Number($('#travel-speed').value)||8,delayHours:Number($('#travel-delay').value)||0,profile:state.terrain});renderTravelResults(estimate,state.site,target);}
+function renderTravelResults(estimate,origin,target){$('#travel-results').innerHTML=`<div class="travel-summary"><div><small>Distance</small><strong>${estimate.distanceKm.toFixed(1)} km</strong></div><div><small>Driving time</small><strong>${estimate.drivingHours.toFixed(1)} h</strong></div></div><div class="travel-schedule"><div><small>Departure (UTC)</small><strong>${fmtUTC(estimate.departureUTC)}</strong></div><div><small>Arrival (UTC)</small><strong>${fmtUTC(estimate.arrivalUTC)}</strong></div></div><p class="planning-note">Great-circle estimate on a 1737.4 km spherical Moon; visibility sampled at the origin only.</p>`;}
+function runTransitEstimate(){const profile=$('#transit-profile').value;const departure=new Date(`${$('#transit-date').value}T${$('#transit-time').value}:00Z`);const estimate=estimateEarthMoonTransit({mode:$('#transit-mode').value,departureUTC:departure.toISOString(),profile,customHours:Number($('#transit-custom-hours').value)||undefined,target:state.site});renderTransitResults(estimate);}
+function renderTransitResults(estimate){$('#transit-results').innerHTML=`<div class="transit-summary"><div><small>Total transit</small><strong>${estimate.totalTransitHours.toFixed(1)} h</strong></div><div><small>Arrival (UTC)</small><strong>${fmtUTC(estimate.arrivalUTC)}</strong></div></div><p class="transit-limitation">The schedule uses reference transfer durations. Trajectories, delta-v and launch windows are outside the estimate.</p>`;}

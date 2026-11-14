@@ -211,6 +211,23 @@
             <p class="terrain-foot"><a href="/science" data-route="science">Terrain coverage and resolution</a>: <a href="https://doi.org/10.3847/PSJ/acf3e1" target="_blank" rel="noopener noreferrer">LOLA source</a></p>
           </div>
 
+          <div class="panel travel-panel" id="travel-panel">
+            <div class="panel-head"><h2>Surface traverse</h2><span class="sim-tag" id="travel-horizon-tag"></span></div>
+
+            <div class="travel-fields">
+              <label>Origin<span id="travel-origin-name" class="travel-origin-static">Current selected site</span></label>
+              <label>Destination<select id="travel-destination"></select></label>
+              <label>Departure date (UTC)<input type="date" id="travel-date" min="2025-01-01" max="2036-12-31" /></label>
+              <label>Departure time (UTC)<input type="time" id="travel-time" step="3600" /></label>
+              <label>Rover speed (km/h)<input type="number" id="travel-speed" min="1" max="60" step="1" value="10" /></label>
+              <label>Extra delay (h)<input type="number" id="travel-delay" min="0" max="240" step="0.5" value="0" /></label>
+            </div>
+            <div class="travel-actions">
+              <button id="travel-run" class="top-primary" type="button">Estimate traverse</button>
+              <button id="travel-sync" class="outline-button" type="button">Use mission date and time</button>
+            </div>
+            <div id="travel-results" class="travel-results" aria-live="polite"></div>
+          </div>
         </div>
       </section>
       <section class="planning-page app-view" data-view="planning" id="planning" hidden aria-label="Compare landing sites and mission dates">
@@ -256,6 +273,25 @@
             <label>Date B<input type="date" id="date-compare-b" min="2025-01-01" max="2036-12-31" /></label>
           </div>
           <div id="date-compare-table" class="compare-table" tabindex="0" aria-label="Date comparison metrics" aria-live="polite"></div>
+        </details>
+
+        <details class="planning-option" id="transit"><summary>Earth-to-Moon timing</summary>
+          <p class="transit-destination">Destination <strong id="transit-destination-tag">Selected site</strong></p>
+          <p class="planning-note" id="transit-profile-tag">About 3.5 days</p>
+            <div class="transit-fields">
+              <label>Schedule by<select id="transit-mode"><option value="depart">Earth departure time</option><option value="land">Desired landing time</option></select></label>
+              <label>Date (UTC)<input type="date" id="transit-date" min="2025-01-01" max="2040-12-31" /></label>
+              <label>Time (UTC)<input type="time" id="transit-time" step="3600" /></label>
+              <label>Transfer profile<select id="transit-profile">
+                <option value="direct">Direct transfer</option>
+                <option value="extended">Low-energy transfer</option>
+                <option value="custom">Custom transit duration</option>
+              </select></label>
+              <label>Custom duration (h)<input type="number" id="transit-custom-hours" min="48" max="720" step="1" value="100" disabled /></label>
+            </div>
+
+          <div class="transit-actions"><button id="transit-run" class="top-primary" type="button">Estimate transit</button><span class="planning-note" id="transit-hint" role="status"></span></div>
+          <div id="transit-results" class="transit-results" aria-live="polite"></div>
         </details>
         <p class="planning-note"><a href="/science" data-route="science">Sampling and ranking methods</a></p>
       </section>
