@@ -1,0 +1,125 @@
+// Sliding mission-window scan for south-pole candidate sites. Same analytical
+// ephemeris as the planner, sampled on a uniform UTC grid. Loaded LOLA horizon
+// profiles can be applied per site; rankings never mix modes. Percentages are
+// sample-based screening estimates, not JPL Horizons or flight numbers.
+import {ephemeris,longestRunHours} from './astro.js';
+import {bodyVisible} from './mission.js';
+
+const HOUR=3600000,DAY=24*HOUR;
+
+export const FINDER_WEIGHTS=Object.freeze({dual:0.7,sun:0.15,earth:0.15});
+export const finderScore=(v,priority)=>{
+  if(priority==='sun')return v.sunPct;
+  if(priority==='earth')return v.earthPct;
+  return v.dualPct*FINDER_WEIGHTS.dual+
+    v.sunPct*FINDER_WEIGHTS.sun+v.earthPct*FINDER_WEIGHTS.earth;
+};
+
+function ensureDate(date,time){
+  if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('Invalid finder UTC date');
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))throw Error('Invalid finder UTC time');
+  const n=Date.parse(date+'T'+time+':00Z');
+  if(!Number.isFinite(n)||new Date(n).toISOString().slice(0,10)!==date)
+    throw Error('Invalid finder UTC date');
+  return n;
+}
+
+// Analyse each possible UTC start date, one sampled ephemeris array per site.
+export function findMissionWindows({
+  sites,startDate,startTime='12:00',searchDays=30,windowDays=7,stepHours=4,priority='balanced',
+  terrainProfiles=null,terrainMode='flat'
+}={}){
+  const epoch=ensureDate(startDate,startTime);
+  if(!['flat','terrain'].includes(terrainMode))throw Error('Unknown terrain mode');
+  if(!Array.isArray(sites)||!sites.length||sites.length>20)throw Error('Select 1–20 valid sites');
+  if(!Number.isInteger(searchDays)||searchDays<1||searchDays>90)throw Error('Search must be 1–90 days');
+  if(!Number.isInteger(windowDays)||windowDays<1||windowDays>28)throw Error('Mission duration must be 1–28 days');
+  if(![1,2,3,4,6,8,12,24].includes(stepHours))throw Error('Unsupported sampling step');
+  if(!['balanced','sun','earth'].includes(priority))throw Error('Invalid finder priority');
+  if(24%stepHours!==0)throw Error('Sampling must evenly divide a day');
+  if(terrainMode==='terrain'){
+    if(!terrainProfiles||typeof terrainProfiles!=='object')throw Error('NASA terrain data must be loaded before terrain-aware rankings');
+    const missing=sites.filter(site=>{
+      const p=terrainProfiles[site.id];
+      return !p||!Array.isArray(p.azimuthDeg)||!Array.isArray(p.elevationDeg)||
+        p.azimuthDeg.length<8||p.elevationDeg.length!==p.azimuthDeg.length||
+        Math.abs(p.lat-site.lat)>0.000001||Math.abs(p.lon-site.lon)>0.000001||
+        !p.source||!(p.coveragePct>=80)||
+        !p.elevationDeg.every(v=>Number.isFinite(v)&&v>=0&&v<=90)||
+        !p.azimuthDeg.every((v,i)=>Number.isFinite(v)&&Math.abs(v-i*360/p.azimuthDeg.length)<0.001);
+    });
+    if(missing.length)throw Error('Cannot compare mixed terrain coverage. Missing valid NASA DEM: '+missing.map(s=>s.name).join(', '));
+  }
+  const stepsPerDay=24/stepHours,steps=windowDays*stepsPerDay;
+  const intervals=(searchDays-1+windowDays)*stepsPerDay;
+  const matrix=[],all=[];
+  for(const site of sites){
+    if(!Number.isFinite(site.lat)||!Number.isFinite(site.lon)||site.lat < -90||site.lat>90)
+      throw Error('Invalid coordinates for site '+(site.name||'unknown'));
+    const profile=terrainMode==='terrain'?terrainProfiles[site.id]:null;
+    const samples=Array.from({length:intervals},(_,i)=>{
+      const obs=ephemeris(new Date(epoch+i*stepHours*HOUR),site.lat,site.lon);
+      const sun=bodyVisible(profile,obs.sun.azimuth,obs.sun.elevation);
+      const earth=bodyVisible(profile,obs.earth.azimuth,obs.earth.elevation);
+      return {sun,earth,dual:sun&&earth};
+    });
+    const sun=[0],earth=[0],dual=[0];
+    for(const item of samples){
+      sun.push(sun.at(-1)+Number(item.sun));
+      earth.push(earth.at(-1)+Number(item.earth));
+      dual.push(dual.at(-1)+Number(item.dual));
+    }
+    const windows=Array.from({length:searchDays},(_,day)=>{
+      const start=day*stepsPerDay,end=start+steps;
+      const sunPct=100*(sun[end]-sun[start])/steps;
+      const earthPct=100*(earth[end]-earth[start])/steps;
+      const dualPct=100*(dual[end]-dual[start])/steps;
+      const longestDualHours=longestRunHours(samples,stepHours,s=>s.dual,start,steps);
+      const longestEarthBlackoutHours=longestRunHours(samples,stepHours,s=>!s.earth,start,steps);
+      const longestDarknessHours=longestRunHours(samples,stepHours,s=>!s.sun,start,steps);
+      const date=new Date(epoch+day*DAY).toISOString().slice(0,10);
+      const item={siteId:site.id,siteName:site.name,siteLat:site.lat,siteLon:site.lon,
+        startDate:date,windowDays,sunPct,earthPct,dualPct,
+        longestDualHours,longestEarthBlackoutHours,longestDarknessHours};
+      item.score=finderScore(item,priority);
+      return item;
+    });
+    matrix.push({site,windows,terrain:profile?{source:profile.source,coveragePct:profile.coveragePct,resolutionM:profile.resolutionM,radiusKm:profile.radiusKm}:null});
+    all.push(...windows);
+  }
+  all.sort((a,b)=>b.score-a.score || b.dualPct-a.dualPct ||
+    b.longestDualHours-a.longestDualHours || a.startDate.localeCompare(b.startDate) ||
+    String(a.siteId).localeCompare(String(b.siteId)));
+  return {matrix,ranked:all,top:all.slice(0,10),bestBySite:matrix.map(m=>({
+    site:m.site,best:[...m.windows].sort((a,b)=>b.score-a.score || b.dualPct-a.dualPct)[0]
+  })).sort((a,b)=>b.best.score-a.best.score),
+  startDate,startTime,searchDays,windowDays,stepHours,priority,terrainMode,
+  scoring:priority==='balanced'?'70% simultaneous + 15% Sun + 15% Earth':priority==='sun'?'Solar access':'Earth geometric visibility',
+  model:terrainMode==='terrain'?'analytical-screening-v1 + loaded LOLA 20km local horizon, UTC, sampled intervals':'analytical-screening-v1, smooth horizon, UTC, sampled intervals'};
+}
+
+// Compare matched site/date/duration windows only, never cross-site rankings.
+// Deltas are percentage points, not probabilities or accuracy bounds.
+export function compareFinderModels(geometric,terrain){
+  if(!geometric||!terrain||geometric.terrainMode!=='flat'||terrain.terrainMode!=='terrain'||
+      geometric.startDate!==terrain.startDate ||
+      (geometric.startTime||'12:00')!==(terrain.startTime||'12:00') ||
+      geometric.windowDays!==terrain.windowDays||
+      geometric.stepHours!==terrain.stepHours||
+      geometric.priority!==terrain.priority)
+    throw Error('Comparison requires same UTC date, duration, step size and priority');
+  const baseline=new Map(geometric.ranked.map(w=>[w.siteId+'|'+w.startDate,w]));
+  const rows=[];
+  for(const t of terrain.ranked){
+    const b=baseline.get(t.siteId+'|'+t.startDate);
+    if(!b)throw Error('Missing geometric comparison for '+t.siteId+' '+t.startDate);
+    rows.push({
+      siteId:t.siteId,siteName:t.siteName,startDate:t.startDate,windowDays:t.windowDays,
+      flatSunPct:b.sunPct,terrainSunPct:t.sunPct,deltaSunPp:t.sunPct-b.sunPct,
+      flatEarthPct:b.earthPct,terrainEarthPct:t.earthPct,deltaEarthPp:t.earthPct-b.earthPct,
+      flatDualPct:b.dualPct,terrainDualPct:t.dualPct,deltaDualPp:t.dualPct-b.dualPct,
+      flatScore:b.score,terrainScore:t.score,deltaScore:t.score-b.score
+    });
+  }
+  return rows.sort((a,b)=>a.startDate.localeCompare(b.startDate)||a.siteName.localeCompare(b.siteName));
+}

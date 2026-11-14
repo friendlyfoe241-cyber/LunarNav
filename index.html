@@ -187,6 +187,21 @@
           <p class="planning-note">Solar energy uses a 12 m² reference array. <a href="/engineering" data-route="engineering">Power settings</a>.</p>
         </section>
 
+        <section class="panel finder-shell" id="finder" aria-labelledby="finder-title">
+          <div class="panel-head"><h2 id="finder-title">Find mission windows</h2><button id="finder-export" class="outline-button" disabled>Export search CSV</button></div>
+          <div class="search-toolbar">
+            <label>Search ahead<select id="finder-range"><option value="30" selected>30 start dates</option><option value="60">60 start dates</option></select></label>
+            <label>Prioritize<select id="finder-priority"><option value="balanced" selected>Sun + Earth access</option><option value="sun">Sunlight</option><option value="earth">Earth visibility</option></select></label>
+            <span class="model-badge" id="finder-model-badge">…</span>
+          </div>
+          <p id="finder-caption" class="planning-note" role="status">Scanning mission windows…</p>
+          <div id="finder-top" class="compare-table" tabindex="0" aria-label="Recommended windows; scroll horizontally on small screens" aria-live="polite"></div>
+          <details class="planning-calendar"><summary>Date calendar</summary>
+            <div class="finder-legend"><span><i class="finder-legend-low"></i> Less access</span><span><i class="finder-legend-high"></i> More access</span></div>
+            <div class="finder-heatmap-wrap" tabindex="0" aria-label="Scrollable site and date calendar"><div id="finder-heatmap" class="finder-heatmap"></div></div>
+          </details>
+          <p class="planning-note" id="finder-shell-status" role="status"></p>
+        </section>
         <p class="planning-note"><a href="/science" data-route="science">Sampling and ranking methods</a></p>
       </section>
       <footer class="footer">
