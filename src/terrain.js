@@ -77,7 +77,8 @@ export function deriveHorizonFromRaster({data,width,height,originX,originY,resol
       const z=read(center.x+dir[0]*projected,center.y+dir[1]*projected);
       if(z===null)continue;
       covered++;lastRange=distance;
-      const apparent=(z-observer)/distance;
+      // Spherical lunar curvature relative to the observer's tangent plane.
+      const apparent=(z-observer-distance*distance/(2*RMOON))/distance;
       const angleDeg=Math.atan(apparent)/DEG;
       if(angleDeg>maxAngle)maxAngle=angleDeg;
     }
