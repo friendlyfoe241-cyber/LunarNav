@@ -168,6 +168,51 @@
           </aside>
         </section>
       </div>
+      <section class="engineering-section app-view" data-view="engineering" id="engineering" hidden aria-label="Lunar mission feasibility">
+        <div class="section-title-row"><h1>Engineering</h1></div>
+        <div class="context-bar"><strong id="engineering-context">Selected lunar study site</strong><a data-route="explore" href="/explore">Change site or date</a></div>
+        <div class="engineering-grid">
+          <div class="panel engineering-controls">
+            <div class="panel-head"><h2>Surface system inputs</h2></div>
+            <div class="engineering-inputs">
+              <label>Solar panel area <small>m²</small><input id="eng-area" type="number" min="0" max="2000" step="1" value="12" /></label>
+              <label>Conversion efficiency <small>%</small><input id="eng-efficiency" type="number" min="0" max="60" step="1" value="28" /></label>
+              <label>Continuous payload load <small>W</small><input id="eng-load" type="number" min="0" max="50000" step="10" value="100" /></label>
+              <label>Usable battery <small>Wh</small><input id="eng-battery" type="number" min="0" max="1000000" step="500" value="6000" /></label>
+              <label>Earth antenna mask <small>° elevation</small><input id="eng-earthcutoff" type="number" min="0" max="90" step="1" value="5" /></label>
+              <label>System derating <small>%</small><input id="eng-derate" type="number" min="0" max="100" step="5" value="80" /></label>
+            </div>
+            <p class="assumption-caption"><a href="/science" data-route="science">Power model assumptions</a></p>
+            <button id="export-model" class="outline-button engineering-export">Export engineering CSV</button>
+          </div>
+
+          <div class="panel engineering-results">
+            <div class="panel-head"><h2>Power and Earth visibility</h2><span class="sim-tag" id="model-horizon-tag">Flat 0° horizon</span></div>
+            <div class="engineering-kpis">
+              <div><small>Minimum battery charge</small><strong id="eng-min-soc">…</strong></div>
+              <div><small>Time without enough power</small><strong id="eng-unmet">…</strong></div>
+              <div><small>Geometric Earth visibility</small><strong id="eng-earth">…</strong><span>With antenna elevation mask</span></div>
+              <div><small>Solar energy generated</small><strong id="eng-energy">…</strong></div>
+            </div>
+            <div class="charge-chart-head"><span>Battery charge</span><span id="eng-ending">…</span></div>
+            <div id="eng-charge-chart" class="charge-chart" role="img" aria-label="Battery state of charge over mission duration"></div>
+            <p id="eng-summary" class="engineering-verdict" role="status">Calculating power…</p>
+          </div>
+
+          <div class="panel terrain-panel">
+            <div class="panel-head"><h2>Local terrain horizon</h2><span class="sim-tag" id="terrain-badge">Flat 0° horizon</span></div>
+            <div class="terrain-actions">
+              <button class="top-primary terrain-load" id="terrain-load">Load NASA terrain</button>
+              <label class="terrain-import" for="terrain-file">Import GeoTIFF</label>
+              <input type="file" id="terrain-file" accept=".tif,.tiff,image/tiff" aria-label="Import NASA LOLA GeoTIFF" />
+            </div>
+            <p id="terrain-status" class="terrain-status" role="status" aria-live="polite">Using a flat 0° horizon.</p>
+            <div id="terrain-plot" class="terrain-plot" role="img" aria-label="Terrain horizon elevation by azimuth"></div>
+            <p class="terrain-foot"><a href="/science" data-route="science">Terrain coverage and resolution</a>: <a href="https://doi.org/10.3847/PSJ/acf3e1" target="_blank" rel="noopener noreferrer">LOLA source</a></p>
+          </div>
+
+        </div>
+      </section>
       <section class="planning-page app-view" data-view="planning" id="planning" hidden aria-label="Compare landing sites and mission dates">
         <div class="section-title-row"><h1>Plan Mission</h1></div>
         <div class="panel planning-controls">
