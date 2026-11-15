@@ -25,6 +25,7 @@ node scripts/browser-smoke.mjs # Run after building; tests desktop and mobile Ch
 
 * **Engineering:** Simulates a horizontal solar array, constant load, and an ideal battery, alongside terrain refinement/import and spherical surface-traverse estimates.
 * **Methods:** Quick help, data provenance, resolution details, and known limitations.
+* **Onboarding and exports:** Every visit opens with a 10-second logo screen, a 10-second browser memory notice, a graphics preset selector, and a 12-step spotlight tour (replayable from Methods). The tour walks through site selection, mission period, the globe, time inspection, site outlook, the visibility timeline, site comparison, recommended dates, terrain refinement, power/battery assumptions, the surface panorama, and the AI assistant. It highlights active features in green, adapts to your screen size, and restores your starting page and inputs when finished or skipped. You can export distinct CSVs (timeline, Finder, engineering), copy or print/save PDF mission briefings, and generate share URLs (which keep preset sites, dates, and durations, though custom coordinates are left out).
 
 ## Data and models
 
