@@ -9,6 +9,9 @@ LunarNav is an interactive lunar mission planning platform developed for the NAS
 
 The project focuses on exploring the lunar surface, analysing environmental conditions, and identifying suitable locations and time windows for potential lunar missions.
 
+## Link to the live site
+https://firstlunarnav.web.app/
+
 ## Overview
 
 Planning a mission to the Moon involves more than selecting a location. Sunlight availability, Earth visibility, surrounding terrain, communication interruptions, and power requirements all influence whether a site is suitable for exploration.
