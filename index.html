@@ -6,10 +6,49 @@
   <meta name="theme-color" content="#15181c" />
   <meta name="description" content="LunarNav: lunar south-pole mission planning and Sun/Earth visibility screening." />
   <title>LunarNav | Lunar mission planning</title>
+  <link rel="preload" href="/assets/lunarnav-loading.webp" as="image" type="image/webp" />
   <link rel="stylesheet" href="/src/styles.css" />
   <script type="module" src="/src/app.js"></script>
 </head>
 <body>
+  <dialog id="onboarding-dialog" class="onboarding-dialog" open data-stage="loading" aria-labelledby="onboarding-title" aria-describedby="onboarding-description">
+    <svg class="tour-spotlight" width="100%" height="100%" aria-hidden="true" focusable="false">
+      <defs><mask id="tour-mask" maskUnits="userSpaceOnUse"><rect width="100%" height="100%" fill="white"/><rect id="tour-cutout" x="0" y="0" width="0" height="0" rx="5" fill="black"/></mask></defs>
+      <rect width="100%" height="100%" fill="black" fill-opacity=".72" mask="url(#tour-mask)"/>
+      <rect id="tour-ring" x="0" y="0" width="0" height="0" rx="5" fill="none" stroke="var(--accent)" stroke-width="2"/>
+    </svg>
+    <div class="onboarding-card">
+      <h1 id="onboarding-title" aria-live="polite" aria-atomic="true">LunarNav</h1>
+      <p id="onboarding-description">Loading LunarNav…</p>
+      <div data-onboarding-panel="loading" role="status" aria-label="Opening LunarNav">
+        <div class="loading-visual">
+          <img class="loading-artwork" src="/assets/lunarnav-loading.webp" alt="1st LunarNav moonlit logo" width="650" height="650" fetchpriority="high" decoding="async" />
+          <div class="loading-status">
+            <div class="loading-progress" id="loading-progress" role="progressbar" aria-label="Loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <span class="loading-progress-fill" id="loading-fill"></span>
+            </div>
+            <output class="loading-percent" id="loading-percent" aria-hidden="true">0%</output>
+          </div>
+        </div>
+      </div>
+      <div data-onboarding-panel="notice" hidden>
+        <button id="notice-okay" type="button" class="notice-okay">Okay</button>
+      </div>
+      <div data-onboarding-panel="graphics" hidden>
+        <fieldset class="graphics-options"><legend class="sr-only">Graphics preset</legend>
+          <label><input type="radio" name="startup-graphics" value="2" /><span>Low graphics <small class="graphics-profile-hint">(better performance)</small></span><small>Relief ×2</small></label>
+          <label><input type="radio" name="startup-graphics" value="5" checked /><span>Medium graphics <small class="graphics-profile-hint">(balanced)</small></span><small>Relief ×5</small></label>
+          <label><input type="radio" name="startup-graphics" value="10" /><span>High graphics <small class="graphics-profile-hint">(better visuals)</small></span><small>Relief ×10</small></label>
+        </fieldset>
+        <button id="graphics-continue" type="button" class="top-primary">Continue to tutorial</button>
+      </div>
+      <div data-onboarding-panel="tour" hidden>
+        <div class="tour-meta"><span id="tour-counter">01 / 12</span><button id="tour-skip" type="button">Skip tour</button></div>
+        <div id="tour-progress" class="tour-progress" role="progressbar" aria-label="Tutorial progress" aria-valuemin="1" aria-valuemax="12" aria-valuenow="1"></div>
+        <div class="tour-actions"><button id="tour-back" type="button" class="outline-button">Back</button><button id="tour-next" type="button" class="top-primary">Next</button></div>
+      </div>
+    </div>
+  </dialog>
   <div id="app" inert>
     <header class="topbar">
       <a class="brand" href="/explore" data-route="explore"><strong>LunarNav</strong></a>
@@ -313,6 +352,52 @@
         </details>
         <p class="planning-note"><a href="/science" data-route="science">Sampling and ranking methods</a></p>
       </section>
+      <section class="science-page app-view" data-view="science" id="science-page" hidden>
+        <div class="section-title-row">
+          <h1>Science &amp; methods</h1>
+          <button type="button" class="outline-button" id="restart-tour">Replay tutorial</button>
+        </div>
+        <div class="science-content">
+          <section class="science-feature">
+            <h2>Ephemeris validation</h2>
+            <p>We compared 90 independently queried Sun and Earth angles from NASA JPL Horizons with LunarNav’s analytical model. The sample covers 45 site and UTC epochs across three sites and three seasons.</p>
+            <dl class="validation-grid">
+              <div><dt>Maximum azimuth error</dt><dd>0.480°</dd></div>
+              <div><dt>Maximum elevation error</dt><dd>0.285°</dd></div>
+              <div><dt>Mean elevation error</dt><dd>0.141°</dd></div>
+            </dl>
+            <p>The benchmark validates the Sun/Earth position calculations only. These measured errors are specific to the sample. A small angular error near the horizon can change whether a body is visible.</p>
+            <div class="science-links"><a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener noreferrer">JPL Horizons</a><a href="https://github.com/friendlyfoe241-cyber/LunarNav/tree/main/data/benchmark" target="_blank" rel="noopener noreferrer">Archived benchmark data</a></div>
+          </section>
+          <div class="science-grid">
+            <article class="science-card">
+              <h2>Visibility and mission windows</h2>
+              <p>Local azimuth and elevation come from a truncated analytical ephemeris. A body counts as visible when its center is above the applied horizon. The model omits disc radius, refraction, eclipses and spacecraft shadows.</p>
+              <p>Earth visibility uses line-of-sight geometry. A radio link budget is required to assess communications. Site and date comparisons sample every 2 hours. The mission-window search samples every 4 hours, so results can differ. The balanced ranking weights simultaneous access at 70%, sunlight at 15% and Earth visibility at 15%.</p>
+              <a href="/planning" data-route="planning">Open mission planning</a>
+            </article>
+            <article class="science-card">
+              <h2>Power and storage</h2>
+              <p>The model uses a fixed horizontal solar array, 1361 W/m² solar irradiance, constant electrical load and a fully charged battery at mission start. Battery charge is clamped to capacity. Battery chemistry, thermal behavior and radio link budgets are outside the model.</p>
+              <a href="/engineering" data-route="engineering">Open engineering</a>
+            </article>
+            <article class="science-card">
+              <h2>Terrain and surface views</h2>
+              <p>The globe uses NASA LROC imagery with illustrative lighting. The Sun and Earth are shown at modeled directions with compressed sizes and distances. Globe relief exaggeration affects the display only. <a href="https://svs.gsfc.nasa.gov/4720/" target="_blank" rel="noopener noreferrer">NASA Moon imagery</a>.</p>
+              <p>Bundled relief uses an 8192 × 4096 global grid (~1.33 km at the equator) and 480 m polar grids. Custom points use these grids for a coarse horizon. Native refinement uses 60–80 m LOLA GeoTIFFs south of 60°S and ~237 m SLDEM2015 between 60°S and 60°N, subject to external range access. The north cap uses the bundled 480 m grid.</p>
+              <p>Horizon profiles sample to 20 km with lunar curvature and radial steps at DEM resolution. Runtime profiles use 1° azimuth bins and archived profiles use 5°. Small hazards, narrow occlusions and terrain beyond the sample radius may be missed. Imported GeoTIFF provenance is unverified. Sites without terrain use a flat 0° horizon.</p>
+              <p>The surface panorama uses NASA LOLA and Kaguya elevations and the modeled Sun direction. Surface texture and stars are illustrative. The Sun (0.53°) and Earth (1.98°) appear at their approximate angular sizes.</p>
+              <a href="https://pgda.gsfc.nasa.gov/products/90" target="_blank" rel="noopener noreferrer">NASA elevation products</a>
+            </article>
+            <article class="science-card">
+              <h2>Traverse and transit estimates</h2>
+              <p>Traverse distance follows a great circle on a spherical Moon. Visibility can use the terrain horizon at the origin. Slope, obstacles, route terrain and rover traversability are outside the estimate.</p>
+              <p>Earth-to-Moon schedules use reference transfer durations. Arrival, orbit insertion, descent and touchdown are distinct estimated events. Destination coordinates identify the landing site. The model does not solve trajectories, calculate delta-v or find launch windows.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <footer class="footer">
         <p>Team 1st LunarNav: NASA Space Apps 2026</p>
         <div>
