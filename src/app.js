@@ -12,6 +12,8 @@ import {estimateEarthMoonTransit} from './transit.js';
 import {deriveGridHorizon,deriveSldemPatch,loadSiteHeights} from './grid-terrain.js';
 import {loadBundledTerrain} from './terrain-cache.js';
 import {computePanoramaColumns,createPanoramaView,bodyStatus} from './panorama.js';
+import {initOnboarding} from './onboarding.js';
+import {PAGE_ROUTES,PAGE_TITLES,routeFromURL,buildPageURL} from './router.js';
 const SUN_CIRCUIT_HOURS=714;
 const params=new URLSearchParams(location.search);
 const startSite=SITES.find(x=>x.id===params.get('site'))||SITES[0];
@@ -33,7 +35,7 @@ $('#mission-time').addEventListener('change',updateAnalysis);
 document.querySelectorAll('#duration button').forEach(b=>b.addEventListener('click',()=>{state.days=Number(b.dataset.days);document.querySelectorAll('#duration button').forEach(x=>x.classList.toggle('selected',x===b));updateAnalysis();}));
 function readDate(){const date=$('#mission-date').value;const time=$('#mission-time').value;if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d\d:\d\d$/.test(time))throw new Error('Enter a valid UTC date and time.');return {date,time,base:new Date(`${date}T${time}:00Z`)};}
 function selectSite(site){state.site=site;siteSelect.value=site.id;updateAnalysis();toast(`${site.name} selected`);}
-function updateAnalysis(){try{const x=readDate();state.date=x.date;state.time=x.time;state.base=x.base;state.samples=sampleWindow({start:state.base,lat:state.site.lat,lon:state.site.lon,days:state.days,stepHours:2,profile:state.terrain});updateSelected();updateMetrics();drawTimeline();drawSky();renderGlobe();updateInspection();updateTerrainBadge();maybeAutoTerrain();renderComparePanel();runFinder();renderDateComparison();updateMissionPanels();hydrateBundledTerrain();}catch(e){toast(e.message||'Could not calculate the mission window.');}}
+function updateAnalysis(){try{const x=readDate();state.date=x.date;state.time=x.time;state.base=x.base;state.samples=sampleWindow({start:state.base,lat:state.site.lat,lon:state.site.lon,days:state.days,stepHours:2,profile:state.terrain});updateSelected();updateMetrics();drawTimeline();drawSky();renderGlobe();updateInspection();updateTerrainBadge();maybeAutoTerrain();renderComparePanel();runFinder();renderDateComparison();updateMissionPanels();hydrateBundledTerrain();updateURL();}catch(e){toast(e.message||'Could not calculate the mission window.');}}
 function updateSelected(){$('#selected-name').textContent=state.site.name;$('#selected-coord').textContent=fmtCoord(state.site.lat,state.site.lon);}
 function updateMetrics(){const stats=summarize(state.samples);$('#dual-value').textContent=stats.dual.toFixed(1);$('#sun-value').textContent=fmtPct(stats.sun);$('#earth-value').textContent=fmtPct(stats.earth);$('#blackout-value').textContent=stats.longestBlackoutHours.toFixed(0)+' h';const best=longestDualWindow(state.samples);$('#best-window-length').textContent=best.hours?`${best.hours.toFixed(0)} hours`:'No dual-access window';}
 function drawTimeline(){const list=state.samples.slice(0,-1),N=Math.max(1,list.length);const rows=[['Sun',x=>x.sun.visible,'#ffd166'],['Earth',x=>x.earth.visible,'#6fe3ff'],['Both',x=>x.dual,'#7fc8ff']];let svg=`<svg class="timeline-svg" viewBox="0 0 960 126" role="img" aria-label="Mission visibility timeline">`;rows.forEach(([label,test,color],r)=>{const y=17+r*34;svg+=`<text x="8" y="${y+13}" fill="#96a0ac" font-size="12">${label}</text>`;list.forEach((s,i)=>{const w=(960-112-12)/N;if(test(s))svg+=`<rect x="${112+i*w}" y="${y}" width="${w+0.5}" height="17" fill="${color}"/>`;});});$('#timeline-graph').innerHTML=svg+'</svg>';}
@@ -78,3 +80,13 @@ const terrainKey=site=>site.id+'|'+site.lat.toFixed(6)+'|'+site.lon.toFixed(6);
 
 async function openPanorama(){const obs=ephemeris(new Date(state.base.getTime()+state.offset*3600000),state.site.lat,state.site.lon);const columns=computePanoramaColumns(state.site,state.terrain);const view=createPanoramaView($('#panorama-canvas'),{site:state.site,columns,bodies:bodyStatus(obs)});$('#panorama-overlay').hidden=false;$('#panorama-title').textContent=`Surface panorama — ${state.site.name}`;state.panoramaView=view;}
 function closePanorama(){$('#panorama-overlay').hidden=true;if(state.panoramaView){state.panoramaView.destroy();state.panoramaView=null;}}
+
+initOnboarding({onFinish:()=>{$('#app').inert=false;}});
+
+let currentPage=routeFromURL()||'explore';
+function showPage(page,{scroll=true}={}){currentPage=PAGE_ROUTES.includes(page)?page:'explore';document.querySelectorAll('.app-view').forEach(v=>{v.hidden=v.dataset.view!==currentPage;});document.title=PAGE_TITLES[currentPage]||PAGE_TITLES.explore;if(scroll)window.scrollTo(0,0);}
+function navigatePage(page,{replace=false}={}){showPage(page);const url=buildPageURL(page,selectionQuery());replace?history.replaceState({page},'',url):history.pushState({page},'',url);}
+function selectionQuery(){return `site=${state.site.id}&date=${state.date}&days=${state.days}`;}
+function updateURL(){if(state.site.custom)return;history.replaceState({page:currentPage},'',buildPageURL(currentPage,selectionQuery()));}
+window.addEventListener('popstate',()=>{showPage(routeFromURL()||'explore',{scroll:false});});
+document.addEventListener('click',event=>{const link=event.target.closest('[data-route]');if(!link)return;event.preventDefault();navigatePage(link.dataset.route);});
