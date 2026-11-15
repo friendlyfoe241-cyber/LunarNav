@@ -3,11 +3,11 @@
   <img src="https://lunarnav-v2.vercel.app/assets/lunarnav-loading.webp" alt="LunarNav" width="220">
 </div>
 
-# LunarNav
 
 ## Link to the live site
 https://firstlunarnav.web.app/
 
+# LunarNav
 
 LunarNav is an interactive lunar mission planning platform developed for the NASA Space Apps Challenge 2026 by Adam Simson and Ankush Dutta.
 
