@@ -216,10 +216,16 @@ export async function deriveSldemPatch(site,{azimuthBins=360,radiusKm=20,fetchRo
     if(!columns.has(col))columns.set(col,[]);
     columns.get(col).push(j*w+i);
   }
+  // Separate spans at 0/360: never read a whole row across the seam.
   const spans=[];
   for(const [row,columns] of rows){
     const sorted=[...columns.keys()].sort((a,b)=>a-b);
-    spans.push({row,c0:sorted[0],c1:sorted[sorted.length-1]+1,columns});
+    let c0=sorted[0],previous=c0;
+    for(const col of sorted.slice(1)){
+      if(col>previous+1){spans.push({row,c0,c1:previous+1,columns});c0=col;}
+      previous=col;
+    }
+    spans.push({row,c0,c1:previous+1,columns});
   }
   const controller=new AbortController();
   const combined=AbortSignal.any([controller.signal,AbortSignal.timeout(30000),...(signal?[signal]:[])]);
