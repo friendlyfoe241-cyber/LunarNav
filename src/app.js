@@ -11,6 +11,7 @@ import {estimateSurfaceTraverse} from './travel.js';
 import {estimateEarthMoonTransit} from './transit.js';
 import {deriveGridHorizon,deriveSldemPatch,loadSiteHeights} from './grid-terrain.js';
 import {loadBundledTerrain} from './terrain-cache.js';
+import {computePanoramaColumns,createPanoramaView,bodyStatus} from './panorama.js';
 const SUN_CIRCUIT_HOURS=714;
 const params=new URLSearchParams(location.search);
 const startSite=SITES.find(x=>x.id===params.get('site'))||SITES[0];
@@ -74,3 +75,6 @@ function cacheTerrain(site,profile){terrainProfiles.set(terrainKey(site),profile
 function refreshTerrainResults(){updateTerrainBadge();renderComparePanel();}
 const terrainProfiles=new Map();
 const terrainKey=site=>site.id+'|'+site.lat.toFixed(6)+'|'+site.lon.toFixed(6);
+
+async function openPanorama(){const obs=ephemeris(new Date(state.base.getTime()+state.offset*3600000),state.site.lat,state.site.lon);const columns=computePanoramaColumns(state.site,state.terrain);const view=createPanoramaView($('#panorama-canvas'),{site:state.site,columns,bodies:bodyStatus(obs)});$('#panorama-overlay').hidden=false;$('#panorama-title').textContent=`Surface panorama — ${state.site.name}`;state.panoramaView=view;}
+function closePanorama(){$('#panorama-overlay').hidden=true;if(state.panoramaView){state.panoramaView.destroy();state.panoramaView=null;}}
