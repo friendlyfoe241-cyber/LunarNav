@@ -62,6 +62,14 @@ npm run dev                    # http://localhost:4173
   great-circle distance on a 1737.4 km spherical Moon. Transit timing uses
   reference durations (~3.5 days direct, ~7.5 days extended).
 
+## Optional Gemini assistant
+
+Set `GEMINI_API_KEY` on the server so it is never exposed to the browser; you
+can also configure `GEMINI_MODEL` (see `.env.example`). `api/chat.js` imports
+the official SDK and runs bounded function calls through `src/tools.js`,
+sharing the planner's math and terrain profiles so the assistant cannot invent
+ephemeris values.
+
 ## References
 
 - [NASA Space Apps : Team 1st LunarNav](https://www.spaceappschallenge.org/2026/find-a-team/1st-lunarnav/)

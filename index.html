@@ -225,6 +225,7 @@
           </aside>
         </section>
       </div>
+
       <section class="engineering-section app-view" data-view="engineering" id="engineering" hidden aria-label="Lunar mission feasibility">
         <div class="section-title-row"><h1>Engineering</h1></div>
         <div class="context-bar"><strong id="engineering-context">Selected lunar study site</strong><a data-route="explore" href="/explore">Change site or date</a></div>
@@ -287,6 +288,7 @@
           </div>
         </div>
       </section>
+
       <section class="planning-page app-view" data-view="planning" id="planning" hidden aria-label="Compare landing sites and mission dates">
         <div class="section-title-row"><h1>Plan Mission</h1></div>
         <div class="panel planning-controls">
@@ -352,6 +354,7 @@
         </details>
         <p class="planning-note"><a href="/science" data-route="science">Sampling and ranking methods</a></p>
       </section>
+
       <section class="science-page app-view" data-view="science" id="science-page" hidden>
         <div class="section-title-row">
           <h1>Science &amp; methods</h1>
@@ -415,6 +418,33 @@
       <div class="report-actions"><button class="outline-button" id="copy-brief">Copy text summary</button><button class="top-primary" id="print-brief">Print / save PDF</button></div>
     </div>
   </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="assistant-root" id="assistant-root" hidden>
+    <div class="assistant-backdrop" data-assistant-close aria-hidden="true"></div>
+    <section class="assistant-panel" id="assistant-panel" role="dialog" aria-modal="true" aria-labelledby="assistant-title" aria-describedby="assistant-subtitle">
+      <div class="assistant-head">
+        <div class="assistant-title-block"><div><strong id="assistant-title">Mission assistant</strong><small id="assistant-subtitle">Gemini</small></div></div>
+        <div class="assistant-head-actions">
+          <button type="button" id="assistant-new" class="assistant-icon-btn" title="Start a new conversation" aria-label="Start a new conversation">↺</button>
+          <button type="button" id="assistant-close" class="assistant-icon-btn" title="Close assistant" aria-label="Close assistant" data-assistant-close>×</button>
+        </div>
+      </div>
+      <div class="assistant-context" id="assistant-context">
+        <span id="assistant-context-text">Mons Mouton: 2026-11-14 12:00 UTC: 7 days</span>
+      </div>
+      <div class="assistant-messages" id="assistant-messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <div class="assistant-composer">
+        <div class="assistant-tools" id="assistant-tools" aria-live="polite"></div>
+        <textarea id="assistant-input" rows="1" placeholder="Ask about your mission…" aria-label="Message the mission assistant"></textarea>
+        <div class="assistant-composer-bottom">
+          <span class="assistant-hint">Enter to send: Shift+Enter for line break</span>
+          <button type="button" id="assistant-send" class="assistant-send" aria-label="Send message">Send</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <button type="button" id="assistant-fab" class="assistant-fab" aria-label="Open Ask Spacey AI" aria-expanded="false"><svg class="assistant-fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 2 1.75 5.25L16 9l-5.25 1.75L9 16l-1.75-5.25L2 9l5.25-1.75L9 2Z"/><path d="m19 3 .6 1.9L21.5 5.5l-1.9.6L19 8l-.6-1.9-1.9-.6 1.9-.6L19 3Z"/><path d="m18 14 1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3Z"/></svg><span class="assistant-fab-label">Ask Spacey AI</span></button>
 </body>
 </html>
