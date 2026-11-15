@@ -9,9 +9,31 @@ const ALLOWED_PAGES = new Set(['home','explore','planning','windows','engineerin
 const MAX_MESSAGES = 24;
 const MAX_CONTEXT_BYTES = 128 * 1024;
 const MAX_TOOL_ROUNDS = 8;
+const MODEL_TIMEOUT_MS = 25000;
+const CIRCUIT_BREAKER_MS = 90 * 1000;
+
 const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
-function activeModel(){
-  return (process.env.GEMINI_MODEL || '').trim() || DEFAULT_MODEL;
+const DEFAULT_FALLBACK_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.5-flash'];
+function modelChain(){
+  const preferred = (process.env.GEMINI_MODEL || '').trim() || DEFAULT_MODEL;
+  const fallbacks = (process.env.GEMINI_FALLBACK_MODELS || '')
+    .split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+  const chain = [preferred, ...(fallbacks.length ? fallbacks : DEFAULT_FALLBACK_MODELS)];
+  return [...new Set(chain)];
+}
+// In-process circuit breaker: a model that just failed transiently is tried
+// last for a short window (per-isolate on Vercel, so it is a soft guard).
+const recentlyFailing = new Map();
+function isCircuitOpen(model){
+  const until = recentlyFailing.get(model);
+  return until != null && until > Date.now();
+}
+function openCircuit(model){
+  recentlyFailing.set(model, Date.now() + CIRCUIT_BREAKER_MS);
+}
+function orderedModelAttempts(){
+  const chain = modelChain();
+  return chain.filter(m => !isCircuitOpen(m)).concat(chain.filter(m => isCircuitOpen(m)));
 }
 
 /* Context sanitisation: only known, bounded fields reach the model. */
@@ -171,17 +193,71 @@ function geminiErrorStatus(error){
   const code = String(error?.message || '').match(/"code"\s*:\s*(\d{3})/);
   return code ? Number(code[1]) : 0;
 }
-async function generateContent(genAI, contents){
-  return await genAI.models.generateContent({
-    model: activeModel(),
-    contents,
-    config: {
-      systemInstruction: {role: 'user', parts: [{text: SYSTEM_INSTRUCTION}]},
-      tools: [{functionDeclarations: TOOL_DECLARATIONS}],
-      temperature: 0.3,
-      maxOutputTokens: 2048
-    }
+function isTransientGeminiError(error){
+  if (!error) return true;
+  const status = geminiErrorStatus(error);
+  // Retryable: 429 quota/throttle, 5xx capacity (incl. 504 deadline), 404
+  // model retired. Auth/validation failures (400/401/403) are never retried.
+  if (status === 404){
+    return /model.*(?:not|no longer|unavailable|not supported)/i.test(String(error?.message || ''));
+  }
+  if (status === 429 || (status >= 500 && status < 600)) return true;
+  // SDK timeouts / retry exhaustion surface as errors with these hints.
+  return /deadline|deadline_exceeded|timeout|abort|retries? exhausted|503|429|504|unavailable|high demand/i.test(String(error?.message || ''));
+}
+async function generateContentWithTimeout(genAI, model, contents){
+  let timeout;
+  const timer = new Promise((_, reject) => {
+    timeout = setTimeout(() => {
+      reject(Object.assign(new Error(`Timed out after ${MODEL_TIMEOUT_MS} ms`), {status: 504}));
+    }, MODEL_TIMEOUT_MS);
   });
+  try {
+    return await Promise.race([
+      genAI.models.generateContent({
+        model,
+        contents,
+        config: {
+          systemInstruction: {role: 'user', parts: [{text: SYSTEM_INSTRUCTION}]},
+          tools: [{functionDeclarations: TOOL_DECLARATIONS}],
+          temperature: 0.3,
+          maxOutputTokens: 2048,
+          httpOptions: {timeout: MODEL_TIMEOUT_MS}
+        }
+      }),
+      timer
+    ]);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+async function generateContentWithFallback(genAI, contents){
+  // Healthy models first; recently failed ones go last so their stall is only
+  // paid again after the circuit re-arms.
+  const attempts = orderedModelAttempts();
+  let lastError = null;
+  for (const model of attempts){
+    // One quick retry per model for fast transient failures (e.g. a 504 that
+    // comes back in seconds). Slow timeouts aren't retried in place (function
+    // time budget); the next model takes over instead.
+    for (let attempt = 0; attempt < 2; attempt++){
+      const started = Date.now();
+      try {
+        return await generateContentWithTimeout(genAI, model, contents);
+      } catch (error){
+        lastError = error;
+        if (!isTransientGeminiError(error)) throw error;
+        openCircuit(model);
+        // 429 is per-minute quota: retrying the same model in the same second
+        // can't work, so move on immediately. Other transients get one quick
+        // retry when they fail fast.
+        const quota = geminiErrorStatus(error) === 429 || /resource_exhausted|quota/i.test(String(error?.message || ''));
+        if (quota || Date.now() - started >= 8000 || attempt === 1) break;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+  }
+  throw lastError || new Error('All configured Gemini models failed');
 }
 function friendlyModelError(error){
   const detail = String(error?.message || 'unknown error');
@@ -189,21 +265,21 @@ function friendlyModelError(error){
     return 'The AI provider timed out before answering. Asking again usually succeeds; history and context are kept for the retry. Provider detail: ' + detail;
   }
   if (/high demand|\bunavailable\b|503|resource_exhausted|\bquota\b|usage limit|\bbusy\b/i.test(detail)){
-    return 'The AI service is busy or at its free-tier usage limit right now. Press retry in a few seconds. Provider detail: ' + detail;
+    return 'The AI service is busy or at its free-tier usage limit right now. Press retry in a few seconds; the app already tries several Gemini models automatically. Provider detail: ' + detail;
   }
   if (/api key|API_KEY|401|403|PERMISSION_DENIED|UNAUTHENTICATED/i.test(detail)){
     return 'Gemini rejected the configured API key or its access. Verify GEMINI_API_KEY on the Vercel deployment. Provider detail: ' + detail;
   }
   return 'The Gemini request failed: ' + detail;
 }
-export {geminiErrorStatus, friendlyModelError};
+export {geminiErrorStatus, isTransientGeminiError, friendlyModelError};
 async function runGeminiRoundtrip(coreMessage, history, context){
   const GenAI = geminiConstructor();
   const genAI = new GenAI(process.env.GEMINI_API_KEY);
   let contents = buildContents(coreMessage, history, context);
   const toolTraces = [];
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++){
-    const result = await generateContent(genAI, contents);
+    const result = await generateContentWithFallback(genAI, contents);
     const text = result.text;
     const calls = result.functionCalls;
     if (!calls || !calls.length) return {text, toolTraces};
