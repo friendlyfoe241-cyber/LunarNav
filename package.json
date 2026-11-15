@@ -5,11 +5,16 @@
   "type": "module",
   "description": "LunaNav: lunar south pole mission-planning cockpit, NASA Space Apps 2026",
   "scripts": {
-    "test": "node --check scripts/preview-server.js && node --check scripts/build.js",
+    "test": "node --check src/globe.js && node --check src/finder.js && node --check src/compare.js && node --check src/situation.js && node --check src/timeline.js && node --check src/travel.js && node --check src/transit.js && node --check scripts/preview-server.js",
     "dev": "node scripts/preview-server.js",
-    "build": "node scripts/build.js"
+    "build": "node scripts/build.js",
+    "check:lola": "node scripts/check-lola-availability.js",
+    "preview": "npm run build && node scripts/preview-server.js --dist"
   },
   "engines": {
     "node": ">=22.13.0"
+  },
+  "devDependencies": {
+    "geotiff": "^3.0.5"
   }
 }
