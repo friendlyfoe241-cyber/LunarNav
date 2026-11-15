@@ -1,183 +1,301 @@
-<div align="center">
 
-<img src="./assets/lunarnav-loading.webp" alt="LunarNav artwork" width="150">
+<div align="center">
+  <img src="https://lunarnav-v2.vercel.app/assets/lunarnav-loading.webp" alt="LunarNav" width="220">
+</div>
 
 # LunarNav
 
-**Explore the Moon. Understand the terrain. Plan the mission.**
+LunarNav is an interactive lunar mission planning platform developed for the NASA Space Apps Challenge 2026 by Adam Simson and Ankush Dutta.
 
-An interactive lunar mission-planning experience created for the **NASA Space Apps Challenge 2026** by **Team 1st LunarNav**.
+The project focuses on exploring the lunar surface, analysing environmental conditions, and identifying suitable locations and time windows for potential lunar missions.
 
-[**Launch LunarNav**](https://lunarnav-v2.vercel.app/) · [Explore the Moon](https://lunarnav-v2.vercel.app/explore) · [Our Space Apps team](https://www.spaceappschallenge.org/2026/find-a-team/1st-lunarnav/)
+## Overview
 
-</div>
+Planning a mission to the Moon involves more than selecting a location. Sunlight availability, Earth visibility, surrounding terrain, communication interruptions, and power requirements all influence whether a site is suitable for exploration.
 
----
+These challenges become particularly important near the lunar south pole, where the Sun remains close to the horizon and surrounding terrain can produce extended periods of darkness.
 
-## The idea
+LunarNav combines these considerations in a browser-based application. Users can explore the Moon in 3D, select locations, examine environmental conditions, compare mission windows, and estimate basic engineering requirements.
 
-A place on the Moon can look perfect on a map and still be a difficult place to operate. Near the lunar south pole, low Sun angles and surrounding terrain create long shadows, while Earth visibility affects opportunities for direct communication.
+The platform uses astronomical calculations, lunar elevation datasets, and interactive visualisations to support preliminary mission planning.
 
-**LunarNav brings those questions into one interactive workspace.** Choose a site, set a UTC mission period, inspect the Sun and Earth against the local horizon, compare possible windows, and explore what the conditions could mean for an early-stage mission design.
+## Features
 
-It is built for exploration, learning, and **first-pass mission screening**—not for certifying a landing site.
+### Interactive 3D Lunar Globe
 
-## What you can do
+LunarNav features a rotatable 3D model of the Moon built using WebGL.
 
-| Workspace | Capabilities |
+The globe uses lunar imagery and elevation data to represent the surface, allowing users to examine different regions and understand the surrounding topography.
+
+Users can navigate the globe, adjust the viewing angle, and select locations for further analysis.
+
+Three graphics presets are available to accommodate different devices. Visual terrain exaggeration can be adjusted without changing the elevation values used in scientific calculations.
+
+### Landing Site Selection
+
+The platform includes five predefined lunar south pole study locations.
+
+| Location | Description |
 | --- | --- |
-| **Explore** | Navigate an interactive 3D Moon, select one of five study locations or choose a custom waypoint, and inspect conditions over time. |
-| **Plan Mission** | Compare sites and mission periods using illumination, darkness, Earth visibility, communication gaps, simultaneous visibility, and reference solar-energy metrics. |
-| **Engineering** | Explore simplified solar-array, power-load, and battery estimates, terrain refinement, and approximate surface travel distances. |
-| **Methods** | Understand the models, data sources, terrain resolution, assumptions, and limitations behind the results. |
+| Mons Mouton | Documented IM-2 lunar landing location |
+| Malapert Region | Reference region of interest for illumination and communications |
+| Shackleton Rim | Approximate historical candidate location |
+| Faustini Rim | Illustrative south polar study location |
+| Nobile Region | Illustrative south polar study location |
 
-### Highlights
+Users can also select their own custom waypoint directly on the lunar globe.
 
-- **Interactive lunar globe:** Rotatable WebGL Moon with real elevation-derived relief and adjustable graphics quality.
-- **Your site, your timeframe:** Five preset south-polar study locations, custom coordinates, UTC date/time selection, and mission duration controls.
-- **Sun and Earth visibility:** Local sky diagram, visibility timeline, and azimuth-dependent terrain-horizon checks when suitable elevation data is loaded.
-- **Mission-window finder:** Search candidate dates, rank site/window combinations by solar access, Earth visibility, or a balanced score, and open recommended windows in Explore.
-- **Site comparison:** Inspect six planning metrics side by side, including the effects of different mission dates.
-- **Terrain-aware exploration:** Use bundled lunar relief, refine local horizons with supported NASA elevation sources, and inspect a 360° terrain panorama from a selected waypoint.
-- **Engineering sandbox:** Estimate reference solar energy and idealized battery behavior; explore approximate surface-traverse and Earth-to-Moon transit timing.
-- **Shareable results:** Export CSV data, generate mission briefings suitable for printing or saving as PDF, and share links to preset-site scenarios.
-- **Ask Spacey AI:** An optional Gemini-powered assistant that can use the selected mission context and the application's analysis tools.
-- **Guided onboarding:** A replayable 12-step tour that introduces the major features.
+Each selected location is associated with geographic coordinates that can be used for further analysis.
 
-## Try it
+The predefined locations include a combination of documented coordinates, reference regions, and illustrative study points. They should not all be treated as verified landing sites.
 
-**Live application:** https://lunarnav-v2.vercel.app/
+### Mission Planning
 
-1. Open **Explore** and select **Mons Mouton**, **Malapert Region**, **Shackleton Rim**, **Faustini Rim**, or **Nobile Region**. You can also choose your own waypoint on the globe.
-2. Choose a UTC start date, time, and mission duration.
-3. Inspect the Moon, Sun/Earth positions, local sky, and visibility timeline.
-4. Open **Plan Mission** to compare locations or search for more favorable dates.
-5. Use **Engineering** for first-order power and travel scenarios, then export a briefing.
+LunarNav allows users to configure a mission using a selected location, UTC start date, start time, and mission duration.
 
-> **About the preset sites:** They are a mixture of a documented landing location, reference coordinates, an approximate historical candidate, and illustrative study points. They are **not** five independently certified landing sites. The app identifies their provenance.
+The application calculates approximate Sun and Earth visibility over the selected period.
 
-## Run locally
+Results include sunlight availability, periods of darkness, Earth visibility, communication gaps, and periods when both the Sun and Earth are simultaneously visible.
 
-**Requirements:** Node.js **22.13+** and npm. Node.js 24 is also tested.
+These measurements can help identify potential operational constraints before a mission is developed in greater detail.
+
+### Mission Window Finder
+
+The Mission Window Finder searches for potentially suitable mission periods based on selected locations and planning priorities.
+
+Users can prioritise solar visibility, Earth visibility, or a balance between the two.
+
+The system evaluates candidate dates and ranks results using the selected criteria.
+
+For balanced searches, the scoring model assigns 70% weight to simultaneous Sun and Earth visibility, 15% to solar visibility, and 15% to Earth visibility.
+
+Recommended windows can be opened directly in the lunar explorer for closer examination.
+
+### Landing Site Comparison
+
+LunarNav allows users to compare multiple lunar locations using the same mission parameters.
+
+The comparison considers illumination, darkness, Earth visibility, communication interruptions, simultaneous visibility, and reference solar energy.
+
+This makes it possible to examine how conditions vary between different lunar regions and mission dates.
+
+### Terrain and Horizon Analysis
+
+The platform incorporates NASA-derived lunar elevation data to estimate how the surrounding terrain affects visibility.
+
+Local terrain horizons are used to determine whether the Sun or Earth is obstructed by nearby topography.
+
+The application includes bundled elevation grids and horizon profiles, with additional terrain refinement available from supported elevation datasets.
+
+Users can also examine a 360-degree terrain panorama generated from elevation data at a selected waypoint.
+
+Terrain calculations use actual elevation values rather than the exaggerated relief displayed in the 3D globe.
+
+### Sun and Earth Visibility
+
+LunarNav calculates approximate Sun and Earth positions relative to a selected lunar location.
+
+The results are presented through visibility timelines, local sky diagrams, and mission analysis panels.
+
+When terrain data is available, visibility calculations account for the local horizon at the corresponding azimuth.
+
+Without terrain data, the application uses a flat geometric horizon.
+
+These calculations provide preliminary estimates of illumination and direct Earth visibility rather than guaranteed communication or power availability.
+
+### Engineering Analysis
+
+The Engineering workspace provides simplified calculations for evaluating mission requirements.
+
+Users can explore solar energy estimates, electrical loads, idealised battery behaviour, and the effects of changing mission conditions.
+
+The platform also includes approximate surface travel distance calculations and reference Earth-to-Moon transit timing.
+
+These models are intended for early engineering comparisons and do not represent complete spacecraft or mission simulations.
+
+### Ask Spacey AI
+
+LunarNav includes an optional AI assistant called Ask Spacey AI.
+
+The assistant uses Google's Gemini API and can access selected mission parameters and application analysis tools.
+
+Users can ask questions about mission conditions, visibility, power requirements, suitable dates, and other aspects of the selected scenario.
+
+The assistant is implemented through a server-side API endpoint so that the Gemini API key is not exposed in the browser.
+
+The rest of LunarNav can operate independently of the AI assistant.
+
+### Mission Reports and Data Export
+
+LunarNav supports exporting mission data for further analysis.
+
+Users can export CSV files containing visibility timelines, mission window results, and engineering calculations.
+
+The application also supports generating mission briefings that can be copied, printed, or saved as PDF documents.
+
+Shareable links allow preset-site mission configurations to be reopened with their selected dates and durations.
+
+### Guided Tutorial
+
+LunarNav includes a 12-step interactive tutorial covering the main sections of the application.
+
+The tutorial introduces site selection, mission settings, globe navigation, visibility analysis, site comparisons, terrain refinement, engineering calculations, and the AI assistant.
+
+It can be replayed from the Methods section.
+
+## Technology
+
+LunarNav is built primarily with JavaScript, HTML, CSS, and WebGL.
+
+The application uses native JavaScript modules for the interface, lunar calculations, mission planning, and visualisation.
+
+WebGL and GLSL are used for rendering the lunar globe and terrain.
+
+Node.js is used for development scripts, builds, and testing.
+
+The optional AI assistant uses the Google Gemini SDK through a server-side endpoint.
+
+The application is deployed using Vercel, with Playwright used for automated browser testing.
+
+## Scientific Data
+
+LunarNav uses publicly available lunar datasets and scientific references.
+
+### Lunar Reconnaissance Orbiter
+
+Lunar imagery and elevation information are derived from NASA lunar observation datasets.
+
+### Lunar Orbiter Laser Altimeter
+
+LOLA elevation data is used for terrain modelling and local horizon calculations.
+
+The application includes bundled terrain profiles and supports additional resolution refinement where source data is available.
+
+### SLDEM2015
+
+SLDEM2015 contributes to the global elevation model used for lunar terrain representation.
+
+### Astronomical Calculations
+
+Sun and Earth positions are estimated using analytical astronomical calculations and lunar rotation conventions.
+
+The calculations are implemented within the application rather than relying on a live external ephemeris service.
+
+NASA JPL Horizons and NAIF SPICE are useful references for more detailed mission geometry and independent validation.
+
+## Project Structure
+
+The repository separates the application into modules responsible for astronomical calculations, visualisation, mission analysis, terrain processing, and engineering tools.
+
+The main application entry point is `index.html`.
+
+The `src` directory contains the browser application and scientific calculation modules.
+
+The `data` directory contains bundled elevation and terrain information.
+
+The `scripts` directory contains the build process, local development server, validation utilities, and browser testing tools.
+
+The `api` directory contains the optional server-side AI assistant.
+
+Deployment configuration is maintained in `vercel.json`.
+
+## Running Locally
+
+LunarNav requires Node.js 22.13 or newer and npm.
+
+Clone the repository, open the project directory, and install the dependencies.
 
 ```bash
-git clone https://github.com/adamjamiesimson/LunarNav-V2.git
-cd LunarNav-V2
-
 npm ci
+```
+
+Start the local development server.
+
+```bash
 npm run dev
 ```
 
-Open **http://localhost:4173**.
+Open the application in your browser at:
 
-The local development server serves the web application and asset proxies. The Gemini assistant requires a separately configured server-side API endpoint.
+http://localhost:4173
 
-### Build and checks
-
-```bash
-npm test                       # Syntax and project checks
-npm run build                  # Create the production site in dist/
-npm run preview                # Serve the production build locally
-```
-
-For the desktop/mobile Chromium smoke checks, after building:
+To create a production build, run:
 
 ```bash
-npx playwright install chromium
-node scripts/browser-smoke.mjs
+npm run build
 ```
 
-Additional developer commands are available in `package.json`, including terrain-source and horizon validation utilities.
+The production files are generated in the `dist` directory.
 
-## Optional AI assistant
+To run the project checks:
 
-**Ask Spacey AI** uses the Google Gemini SDK through the server-side `api/chat.js` endpoint. The core lunar explorer, planner, and engineering models are separate from the assistant.
+```bash
+npm test
+```
 
-Configure these environment variables on your server or Vercel deployment:
+To preview the production build locally:
+
+```bash
+npm run preview
+```
+
+### Optional Gemini Configuration
+
+The AI assistant requires a Gemini API key configured on the server.
+
+The repository includes an `.env.example` file documenting the available configuration variables.
 
 ```dotenv
-GEMINI_API_KEY=your_server_side_key
+GEMINI_API_KEY=your_api_key
 GEMINI_MODEL=gemini-3.8-flash
 ```
 
-`GEMINI_MODEL` is optional; fallback models can be configured with `GEMINI_FALLBACK_MODELS`. See [`.env.example`](./.env.example).
+The API key must remain server-side and should never be committed to the repository.
 
-**Never put a Gemini API key into client-side JavaScript or commit it to Git.** Without a configured API endpoint, the assistant is unavailable, but the rest of the application can still be used.
+The local development server does not automatically provide the deployed Gemini serverless endpoint.
 
-## How the analysis works
+## Limitations
 
-LunarNav combines lightweight astronomical calculations with elevation-based horizon modeling.
+LunarNav is a research and educational prototype developed for preliminary lunar mission analysis.
 
-1. **Celestial geometry:** `src/astro.js` estimates Sun and Earth directions in a Moon-fixed frame using truncated series and IAU 2015 lunar rotation conventions.
-2. **Terrain horizons:** Bundled NASA-derived elevation grids and site horizon profiles describe how nearby terrain may obstruct a body at a given azimuth. Supported source-data refinement can improve local profiles within an approximately 20 km radius.
-3. **Visibility:** A body is counted as visible when its **center** is above the modeled local horizon. Without a loaded terrain profile, the baseline is a flat **0° geometric horizon**.
-4. **Window screening:** The app samples visibility across candidate mission periods and derives metrics for sunlight, darkness, Earth access, interruptions, and simultaneous Sun/Earth visibility.
-5. **Engineering scenarios:** Reference solar-array, constant-load, ideal-battery, and spherical-distance calculations turn those geometric results into exploratory planning estimates.
+Astronomical calculations are approximate and do not replace high-precision mission ephemerides.
 
-Window ranking generally uses **4-hour samples**; mission comparisons use **2-hour samples**. These are discretely sampled screening results, not exact event predictions.
+Terrain models have limited resolution and may not capture smaller obstacles, local hazards, or distant terrain obstructions.
 
-### Data and references
+Sun and Earth visibility estimates describe geometric visibility and should not be interpreted as guaranteed communications or electrical power availability.
 
-The project draws on or references:
+The engineering models use simplified assumptions and do not include complete thermal, electrical, orbital, or spacecraft performance simulations.
 
-- [NASA LOLA / Planetary Geology, Geophysics and Geochemistry Laboratory](https://pgda.gsfc.nasa.gov/products/90) — lunar elevation and south-polar terrain.
-- [SLDEM2015](https://imbrium.mit.edu/) — lunar digital elevation data used in the global relief pipeline.
-- [NASA Scientific Visualization Studio](https://svs.gsfc.nasa.gov/4720/) — Lunar Reconnaissance Orbiter color imagery.
-- [NASA Planetary Data System](https://pds.nasa.gov/) — landing-site reference and mission information.
-- [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/) and [NAIF SPICE](https://naif.jpl.nasa.gov/naif/) — relevant external references for lunar mission geometry.
-- [IAU Working Group on Cartographic Coordinates and Rotational Elements](https://doi.org/10.1007/s10569-017-9805-5) — lunar rotation conventions.
+Mission window calculations use discrete time samples and may not capture every short-duration visibility event.
 
-The application **does not use a full SPICE ephemeris or a live JPL Horizons solution** for its core browser calculations. The **Methods** workspace documents additional provenance and technical details.
+The results should not be used as the sole basis for operational mission decisions.
 
-## Project structure
+## Future Development
 
-```text
-LunarNav-V2/
-├── api/
-│   └── chat.js              # Optional server-side Gemini assistant
-├── assets/                  # Images and application assets
-├── data/                    # Bundled lunar relief and horizon data
-├── scripts/                 # Build, preview, validation, and smoke checks
-├── src/
-│   ├── astro.js             # Lunar/Sun/Earth geometry
-│   ├── globe.js             # WebGL lunar globe
-│   ├── finder.js            # Mission-window ranking
-│   ├── router.js            # Application routes
-│   └── ...                  # Planning, terrain, engineering, and UI modules
-├── index.html               # Application entry point
-├── package.json
-└── vercel.json              # Deployment and data-source rewrites
-```
+Further development of LunarNav may include higher-resolution terrain analysis, improved astronomical precision, additional lunar datasets, expanded engineering models, and more detailed surface route planning.
 
-**Stack:** JavaScript ES modules, HTML/CSS, WebGL/GLSL, Node.js tooling, Vercel, and the optional Google Gemini SDK. Automated browser checks use Playwright.
+Additional validation against scientific reference models would also help improve the accuracy and reliability of the platform.
 
-## Important limitations
+## Live Demo
 
-LunarNav is a **research and educational prototype**, not flight software or a mission-approval system.
+LunarNav can be accessed at:
 
-- Astronomical positions are approximate; they do not include every effect modeled by high-precision ephemerides.
-- Local terrain horizons have finite spatial resolution and reach; small hazards, boulders, distant obstructions, and incomplete coverage can be missed.
-- Sun/Earth visibility is geometric. It is **not** a radio link budget or a guarantee of communications, power generation, or landing safety.
-- The power model uses a horizontal solar array, a constant electrical load, and an ideal battery. It does not simulate detailed thermal behavior, degradation, or battery chemistry.
-- Travel estimates use spherical distances, not traversable paths through real obstacles or slopes.
-- Simplified time sampling can miss short visibility events. Imported terrain may be unverified, and the app labels such sources.
+https://lunarnav-v2.vercel.app/
 
-**Do not use these estimates as the sole basis for operational mission decisions.**
+## NASA Space Apps Challenge 2026
 
-## Team
+LunarNav was developed as a submission to the NASA Space Apps Challenge 2026.
 
-Made for the **NASA Space Apps Challenge 2026** by **Adam Simson** and **Ankush Dutta**, **Team 1st LunarNav**.
+The project explores how publicly available lunar data, scientific calculations, and interactive software can be used for preliminary lunar mission planning.
 
-[View our NASA Space Apps team page](https://www.spaceappschallenge.org/2026/find-a-team/1st-lunarnav/)
+The application is an independent student project and is not affiliated with or endorsed by NASA.
 
----
+## Developers
 
-<div align="center">
+**Adam Simson**
 
-**The Moon is complicated. Exploring it shouldn't have to be.**
+**Ankush Dutta**
 
-[**Open LunarNav**](https://lunarnav-v2.vercel.app/)
+NASA Space Apps Challenge 2026
 
-<sub>Independent NASA Space Apps Challenge project. Not affiliated with or endorsed by NASA.</sub>
-
-</div>
+Team 1st LunarNav
