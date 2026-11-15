@@ -5,12 +5,15 @@
 
 # LunarNav
 
+## Link to the live site
+https://firstlunarnav.web.app/
+
+
 LunarNav is an interactive lunar mission planning platform developed for the NASA Space Apps Challenge 2026 by Adam Simson and Ankush Dutta.
 
 The project focuses on exploring the lunar surface, analysing environmental conditions, and identifying suitable locations and time windows for potential lunar missions.
 
-## Link to the live site
-https://firstlunarnav.web.app/
+
 
 ## Overview
 
