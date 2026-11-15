@@ -4,7 +4,8 @@
 </div>
 
 
-## Link to the live site
+## Live Demo
+LunarNav can be accessed at:
 https://firstlunarnav.web.app/
 
 # LunarNav
@@ -282,11 +283,7 @@ Further development of LunarNav may include higher-resolution terrain analysis, 
 
 Additional validation against scientific reference models would also help improve the accuracy and reliability of the platform.
 
-## Live Demo
 
-LunarNav can be accessed at:
-
-https://lunarnav-v2.vercel.app/
 
 ## NASA Space Apps Challenge 2026
 
