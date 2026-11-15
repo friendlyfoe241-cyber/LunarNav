@@ -1,63 +1,183 @@
-# LunarNav: Lunar Mission Planning
+<div align="center">
 
-A NASA Space Apps Challenge 2026 prototype built by **Team 1st LunarNav**. Pick a lunar site and a UTC timeframe to screen Sun and Earth visibility, local terrain horizons, and first-order engineering constraints. Keep in mind that these are exploratory estimates rather than landing certification, guaranteed power, or an RF link budget. This project is not affiliated with or endorsed by NASA.
+<img src="./assets/lunarnav-loading.webp" alt="LunarNav artwork" width="150">
+
+# LunarNav
+
+**Explore the Moon. Understand the terrain. Plan the mission.**
+
+An interactive lunar mission-planning experience created for the **NASA Space Apps Challenge 2026** by **Team 1st LunarNav**.
+
+[**Launch LunarNav**](https://lunarnav-v2.vercel.app/) · [Explore the Moon](https://lunarnav-v2.vercel.app/explore) · [Our Space Apps team](https://www.spaceappschallenge.org/2026/find-a-team/1st-lunarnav/)
+
+</div>
+
+---
+
+## The idea
+
+A place on the Moon can look perfect on a map and still be a difficult place to operate. Near the lunar south pole, low Sun angles and surrounding terrain create long shadows, while Earth visibility affects opportunities for direct communication.
+
+**LunarNav brings those questions into one interactive workspace.** Choose a site, set a UTC mission period, inspect the Sun and Earth against the local horizon, compare possible windows, and explore what the conditions could mean for an early-stage mission design.
+
+It is built for exploration, learning, and **first-pass mission screening**—not for certifying a landing site.
+
+## What you can do
+
+| Workspace | Capabilities |
+| --- | --- |
+| **Explore** | Navigate an interactive 3D Moon, select one of five study locations or choose a custom waypoint, and inspect conditions over time. |
+| **Plan Mission** | Compare sites and mission periods using illumination, darkness, Earth visibility, communication gaps, simultaneous visibility, and reference solar-energy metrics. |
+| **Engineering** | Explore simplified solar-array, power-load, and battery estimates, terrain refinement, and approximate surface travel distances. |
+| **Methods** | Understand the models, data sources, terrain resolution, assumptions, and limitations behind the results. |
+
+### Highlights
+
+- **Interactive lunar globe:** Rotatable WebGL Moon with real elevation-derived relief and adjustable graphics quality.
+- **Your site, your timeframe:** Five preset south-polar study locations, custom coordinates, UTC date/time selection, and mission duration controls.
+- **Sun and Earth visibility:** Local sky diagram, visibility timeline, and azimuth-dependent terrain-horizon checks when suitable elevation data is loaded.
+- **Mission-window finder:** Search candidate dates, rank site/window combinations by solar access, Earth visibility, or a balanced score, and open recommended windows in Explore.
+- **Site comparison:** Inspect six planning metrics side by side, including the effects of different mission dates.
+- **Terrain-aware exploration:** Use bundled lunar relief, refine local horizons with supported NASA elevation sources, and inspect a 360° terrain panorama from a selected waypoint.
+- **Engineering sandbox:** Estimate reference solar energy and idealized battery behavior; explore approximate surface-traverse and Earth-to-Moon transit timing.
+- **Shareable results:** Export CSV data, generate mission briefings suitable for printing or saving as PDF, and share links to preset-site scenarios.
+- **Ask Spacey AI:** An optional Gemini-powered assistant that can use the selected mission context and the application's analysis tools.
+- **Guided onboarding:** A replayable 12-step tour that introduces the major features.
+
+## Try it
+
+**Live application:** https://lunarnav-v2.vercel.app/
+
+1. Open **Explore** and select **Mons Mouton**, **Malapert Region**, **Shackleton Rim**, **Faustini Rim**, or **Nobile Region**. You can also choose your own waypoint on the globe.
+2. Choose a UTC start date, time, and mission duration.
+3. Inspect the Moon, Sun/Earth positions, local sky, and visibility timeline.
+4. Open **Plan Mission** to compare locations or search for more favorable dates.
+5. Use **Engineering** for first-order power and travel scenarios, then export a briefing.
+
+> **About the preset sites:** They are a mixture of a documented landing location, reference coordinates, an approximate historical candidate, and illustrative study points. They are **not** five independently certified landing sites. The app identifies their provenance.
 
 ## Run locally
 
-You will need **Node 22.13+** (Node 24 is also tested). The client runs on native browser ES modules, while the optional server-side assistant uses `@google/genai`.
+**Requirements:** Node.js **22.13+** and npm. Node.js 24 is also tested.
 
-```sh
-npm ci                         # Lockfile is committed; CI installs Chromium system deps
-npm test
-npm run build                  # Outputs to dist/ (vercel.json preserves routes and proxies)
-npm run dev                    # Starts http://localhost:4173 (serves files/proxies; no Gemini function)
-npx playwright install chromium
-node scripts/browser-smoke.mjs # Run after building; tests desktop and mobile Chromium
+```bash
+git clone https://github.com/adamjamiesimson/LunarNav-V2.git
+cd LunarNav-V2
 
+npm ci
+npm run dev
 ```
 
-## Workspace
+Open **http://localhost:4173**.
 
-* **Explore (default):** A rotatable displaced globe with 5 study sites (or any custom point you click), UTC time inspection, a visibility timeline, a sky diagram, and mission results.
-* **Plan Mission (`/planning`, with legacy `/windows` and `/compare` links still supported):** Set one date, time, duration, and horizon to drive a 6-metric site table, Sun/Earth timelines, and 3 recommended windows that open straight into Explore. It tracks illumination, longest darkness, Earth visibility and gaps, simultaneous access, and reference solar energy, with expandable views for a date calendar, two-date comparisons, and reference Earth-to-Moon transit timing.
-* *Sampling and terrain:* Window searches sample every 4 hours, while comparisons sample every 2 hours. Loaded-terrain comparisons only include covered sites, and flat mode is clearly labeled. Exports preserve all search windows, terrain provenance, and matched baseline deltas.
+The local development server serves the web application and asset proxies. The Gemini assistant requires a separately configured server-side API endpoint.
 
+### Build and checks
 
-* **Engineering:** Simulates a horizontal solar array, constant load, and an ideal battery, alongside terrain refinement/import and spherical surface-traverse estimates.
-* **Methods:** Quick help, data provenance, resolution details, and known limitations.
-* **Onboarding and exports:** Every visit opens with a 10-second logo screen, a 10-second browser memory notice, a graphics preset selector, and a 12-step spotlight tour (replayable from Methods). The tour walks through site selection, mission period, the globe, time inspection, site outlook, the visibility timeline, site comparison, recommended dates, terrain refinement, power/battery assumptions, the surface panorama, and the AI assistant. It highlights active features in green, adapts to your screen size, and restores your starting page and inputs when finished or skipped. You can export distinct CSVs (timeline, Finder, engineering), copy or print/save PDF mission briefings, and generate share URLs (which keep preset sites, dates, and durations, though custom coordinates are left out).
+```bash
+npm test                       # Syntax and project checks
+npm run build                  # Create the production site in dist/
+npm run preview                # Serve the production build locally
+```
 
-## Data and models
+For the desktop/mobile Chromium smoke checks, after building:
 
-* **Globe and surface panorama:** Uses the NASA SVS LROC color mosaic (`lroc_color_2k.jpg`) and NASA Blue Marble (`bluemarble-1024.png`), served same-origin via Vercel rewrites and local proxies. Elevation grids are baked from real NASA height data using `scripts/build-relief.mjs` (never from color maps). Clicking *View panorama of location* flies the globe down to your selected waypoint and renders a drag-to-look 360° horizon panorama ray-marched directly from the DEM heights (using the native waypoint patch nearby and the baked grid farther out), plotting the Sun and Earth at their actual azimuth/elevation with silhouette terrain obstruction.
-* **Sites:** Mons Mouton uses the NASA PDS IM-2 landing coordinate, Malapert uses a NASA reference coordinate, and Shackleton Rim is an approximate historical candidate. Faustini and Nobile are illustrative study points rather than surveyed landing sites. Full classifications and source links live inside the UI.
-* **Geometry (`src/astro.js`):** Computes Moon-fixed local azimuth and elevation using truncated lunar/solar series and IAU 2015 lunar rotation. A body counts as visible when its center clears the local azimuth-dependent terrain horizon (or 0° if no terrain is loaded). This rule is shared across the timeline, comparison, Finder, engineering, and AI tools, though sampling rates differ explicitly (2 hours for planner/comparison, 4 hours for rankings/Finder, plus a separate antenna elevation mask in engineering). Eclipses, disc/limb corrections, light-time, spacecraft shadows, and hazard models are not included.
-* **Relief and rendering:** Ships with an **8192 × 4096** global grid (~1.33 km/px at the equator, blending SLDEM2015 mid-latitudes with polar DEMs) and ~480 m/px north and south polar grids (datum and 12-bit vertical quantization are documented in `data/relief.json`). Custom globe clicks derive a coarse horizon from these bundled grids.
-* *Graphics:* Uses elevation-dependent ray intersection and surface normals. The **Low ×2**, **Medium ×5** (default), and **High realistic ×10** presets control visual relief exaggeration only, while scientific calculations always use true elevations. GPU uploads cap at 4096 px on desktop and 2048 px on small screens using nearest sampling. Canvas readbacks only cover the requested window, retaining a single decoded grid, bounded custom profile storage, and cached patch uploads to keep resource usage bounded (though performance still varies by device).
+```bash
+npx playwright install chromium
+node scripts/browser-smoke.mjs
+```
 
+Additional developer commands are available in `package.json`, including terrain-source and horizon validation utilities.
 
-* **Native terrain and horizons:** Pre-archived profiles in `data/lola-horizons.json` cover the 5 study sites (20 km radius, 72 bins at 5°). Optional runtime refinement calculates 360 bins at 1° using exact, bounded HTTP 206 uncompressed range requests (splitting longitude seams, rejecting oversized/invalid data, enforcing timeouts, canceling stale site requests, and safely falling back on errors):
-* **80°S to 90°S:** NASA LOLA `LDEM_80S_80MPP_ADJ.TIF` (80 m/px).
-* **60°S to 80°S:** NASA LOLA `LDEM_60S_60MPP_ADJ.TIF` (60 m/px).
-* **60°S to 60°N:** SLDEM2015 (128 px/deg, ~237 m/px at the equator, pixel-registered little-endian float32 km above R = 1737.4 km).
-* **North Pole:** Keeps the bundled 480 m grid, as a native runtime loader is not implemented.
-* Runtime patches preserve Float32 meters, NoData masks, and georeferencing, automatically refreshing all derived mission samples. You can also import local 60–100 m `MOON_ME` south-polar GeoTIFFs (provenance unverified). Horizons account for spherical curvature across a 20 km radius with radial steps matched to source resolution, leaving far-field terrain, unresolved hazards, and narrow occlusions as known limitations. While `src/surface.js` sets up local frames, terrain-height cameras, and visibility foundations, a full surface-view renderer is not yet implemented. Color-map ingestion requires a documented legend and georeference, and USGS SIM 3316 shaded topography is strictly a cartographic reference.
+## Optional AI assistant
 
+**Ask Spacey AI** uses the Google Gemini SDK through the server-side `api/chat.js` endpoint. The core lunar explorer, planner, and engineering models are separate from the assistant.
 
-* **Engineering and travel:** Power modeling assumes a fixed horizontal array (1361 W/m²), constant load, and a full ideal battery without thermal or chemistry models. Earth access is purely geometric plus your antenna mask. Traverse estimates great-circle distance on a 1737.4 km spherical Moon and checks visibility only at the origin rather than along a slope- or obstacle-aware path. Transit timing uses reference durations (~3.5 days direct, ~7.5 days extended, or custom), using target coordinates for identification without trajectory propagation or delta-v math.
+Configure these environment variables on your server or Vercel deployment:
 
-## Optional Gemini assistant
+```dotenv
+GEMINI_API_KEY=your_server_side_key
+GEMINI_MODEL=gemini-3.8-flash
+```
 
-Set `GEMINI_API_KEY` on the server so it is never exposed to the browser; you can also configure `GEMINI_MODEL` (defaults to `gemini-3.8-flash`) and `GEMINI_FALLBACK_MODELS` (see `.env.example`). `api/chat.js` imports the official SDK and runs bounded function calls through `src/tools.js`, sharing the planner's math, terrain profiles, and full-resolution azimuth arrays. Chat history lives in browser memory/sessionStorage, and missing API configuration is surfaced clearly in the UI. Both the SDK shape and handler behavior are tested, though no live keyed Gemini response was verified during this cleanup.
+`GEMINI_MODEL` is optional; fallback models can be configured with `GEMINI_FALLBACK_MODELS`. See [`.env.example`](./.env.example).
 
-## References
+**Never put a Gemini API key into client-side JavaScript or commit it to Git.** Without a configured API endpoint, the assistant is unavailable, but the rest of the application can still be used.
 
-- [NASA Space Apps : Team 1st LunarNav](https://www.spaceappschallenge.org/2026/find-a-team/1st-lunarnav/)
-- [NASA PDS : IM-2 Athena](https://pds.nasa.gov/ds-view/pds/viewContext.jsp?identifier=urn%3Anasa%3Apds%3Acontext%3Ainstrument_host%3Aspacecraft.clps_to_prime1_athena&version=1.0)
-- [NASA : Malapert region](https://science.nasa.gov/image-detail/20100618/)
-- [NASA : South-pole illumination map](https://science.nasa.gov/resource/illumination-map-of-the-moons-south-pole/)
-- [NASA PGDA : LOLA south-polar DEM](https://pgda.gsfc.nasa.gov/products/90) ([data DOI](https://doi.org/10.60903/gsfcpgda-lola-spole))
-- [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/manual.html) ([API](https://ssd-api.jpl.nasa.gov/doc/horizons.html))
-- [NAIF SPICE](https://naif.jpl.nasa.gov/naif/)
-- [IAU WGCCRE 2015 report](https://doi.org/10.1007/s10569-017-9805-5)
+## How the analysis works
 
+LunarNav combines lightweight astronomical calculations with elevation-based horizon modeling.
+
+1. **Celestial geometry:** `src/astro.js` estimates Sun and Earth directions in a Moon-fixed frame using truncated series and IAU 2015 lunar rotation conventions.
+2. **Terrain horizons:** Bundled NASA-derived elevation grids and site horizon profiles describe how nearby terrain may obstruct a body at a given azimuth. Supported source-data refinement can improve local profiles within an approximately 20 km radius.
+3. **Visibility:** A body is counted as visible when its **center** is above the modeled local horizon. Without a loaded terrain profile, the baseline is a flat **0° geometric horizon**.
+4. **Window screening:** The app samples visibility across candidate mission periods and derives metrics for sunlight, darkness, Earth access, interruptions, and simultaneous Sun/Earth visibility.
+5. **Engineering scenarios:** Reference solar-array, constant-load, ideal-battery, and spherical-distance calculations turn those geometric results into exploratory planning estimates.
+
+Window ranking generally uses **4-hour samples**; mission comparisons use **2-hour samples**. These are discretely sampled screening results, not exact event predictions.
+
+### Data and references
+
+The project draws on or references:
+
+- [NASA LOLA / Planetary Geology, Geophysics and Geochemistry Laboratory](https://pgda.gsfc.nasa.gov/products/90) — lunar elevation and south-polar terrain.
+- [SLDEM2015](https://imbrium.mit.edu/) — lunar digital elevation data used in the global relief pipeline.
+- [NASA Scientific Visualization Studio](https://svs.gsfc.nasa.gov/4720/) — Lunar Reconnaissance Orbiter color imagery.
+- [NASA Planetary Data System](https://pds.nasa.gov/) — landing-site reference and mission information.
+- [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/) and [NAIF SPICE](https://naif.jpl.nasa.gov/naif/) — relevant external references for lunar mission geometry.
+- [IAU Working Group on Cartographic Coordinates and Rotational Elements](https://doi.org/10.1007/s10569-017-9805-5) — lunar rotation conventions.
+
+The application **does not use a full SPICE ephemeris or a live JPL Horizons solution** for its core browser calculations. The **Methods** workspace documents additional provenance and technical details.
+
+## Project structure
+
+```text
+LunarNav-V2/
+├── api/
+│   └── chat.js              # Optional server-side Gemini assistant
+├── assets/                  # Images and application assets
+├── data/                    # Bundled lunar relief and horizon data
+├── scripts/                 # Build, preview, validation, and smoke checks
+├── src/
+│   ├── astro.js             # Lunar/Sun/Earth geometry
+│   ├── globe.js             # WebGL lunar globe
+│   ├── finder.js            # Mission-window ranking
+│   ├── router.js            # Application routes
+│   └── ...                  # Planning, terrain, engineering, and UI modules
+├── index.html               # Application entry point
+├── package.json
+└── vercel.json              # Deployment and data-source rewrites
+```
+
+**Stack:** JavaScript ES modules, HTML/CSS, WebGL/GLSL, Node.js tooling, Vercel, and the optional Google Gemini SDK. Automated browser checks use Playwright.
+
+## Important limitations
+
+LunarNav is a **research and educational prototype**, not flight software or a mission-approval system.
+
+- Astronomical positions are approximate; they do not include every effect modeled by high-precision ephemerides.
+- Local terrain horizons have finite spatial resolution and reach; small hazards, boulders, distant obstructions, and incomplete coverage can be missed.
+- Sun/Earth visibility is geometric. It is **not** a radio link budget or a guarantee of communications, power generation, or landing safety.
+- The power model uses a horizontal solar array, a constant electrical load, and an ideal battery. It does not simulate detailed thermal behavior, degradation, or battery chemistry.
+- Travel estimates use spherical distances, not traversable paths through real obstacles or slopes.
+- Simplified time sampling can miss short visibility events. Imported terrain may be unverified, and the app labels such sources.
+
+**Do not use these estimates as the sole basis for operational mission decisions.**
+
+## Team
+
+Made for the **NASA Space Apps Challenge 2026** by **Adam Simson** and **Ankush Dutta**, **Team 1st LunarNav**.
+
+[View our NASA Space Apps team page](https://www.spaceappschallenge.org/2026/find-a-team/1st-lunarnav/)
+
+---
+
+<div align="center">
+
+**The Moon is complicated. Exploring it shouldn't have to be.**
+
+[**Open LunarNav**](https://lunarnav-v2.vercel.app/)
+
+<sub>Independent NASA Space Apps Challenge project. Not affiliated with or endorsed by NASA.</sub>
+
+</div>
